@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sistema de Asistencia</title>
+<style>
+/* ═══════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pr:#4f46e5;--pr-d:#3730a3;--pr-l:#e0e7ff;--pr-ll:#f5f3ff;
+  --ok:#16a34a;--ok-bg:#dcfce7;--ok-l:#bbf7d0;
+  --no:#dc2626;--no-bg:#fee2e2;--no-l:#fecaca;
+  --wr:#d97706;--wr-bg:#fef3c7;--wr-l:#fde68a;
+  --in:#0284c7;--in-bg:#e0f2fe;--in-l:#bae6fd;
+  --gy:#6b7280;--gy-bg:#f3f4f6;
+  --bg:#f0f2ff;--surface:#ffffff;--surface2:#f8faff;
+  --txt:#111827;--txt2:#374151;--txt3:#6b7280;--txt4:#9ca3af;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --shadow:0 4px 24px rgba(0,0,0,.09);
+  --shadow-sm:0 1px 6px rgba(0,0,0,.06);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.15);
+  --r:12px;--r-sm:8px;--r-lg:18px;
+  --sidebar:220px;--header:60px;
+  --trans:.2s ease;
+  --primary:var(--pr);--primary-dark:var(--pr-d);--primary-light:var(--pr-l);
+  --success:var(--ok);--success-bg:var(--ok-bg);
+  --danger:var(--no);--danger-bg:var(--no-bg);
+  --warn:var(--wr);--warn-bg:var(--wr-bg);
+  --info:var(--in);--info-bg:var(--in-bg);
+  --gray:var(--gy);--radius:var(--r);
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#253347;
+  --txt:#f1f5f9;--txt2:#cbd5e1;--txt3:#94a3b8;--txt4:#64748b;
+  --border:#334155;--border2:#475569;
+  --pr-l:#312e81;--pr-ll:#1e1b4b;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-sm:0 1px 6px rgba(0,0,0,.3);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow:hidden}
+
+/* ── App Shell ── */
+#app{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── Header ── */
+header{
+  background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+  color:#fff;padding:16px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  box-shadow:0 2px 12px rgba(79,70,229,.4)
+}
+header h1{font-size:1.3rem;font-weight:700;letter-spacing:-.3px;flex:1;min-width:180px}
+header h1 span{opacity:.75;font-size:.85em}
+#dayPicker{
+  display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);
+  border-radius:40px;padding:6px 14px;backdrop-filter:blur(4px)
+}
+#dayPicker label{font-size:.8rem;opacity:.85;white-space:nowrap}
+#daySelect{
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);
+  color:#fff;border-radius:20px;padding:4px 10px;font-size:.9rem;cursor:pointer;outline:none
+}
+#daySelect option{background:var(--primary-dark);color:#fff}
+#syncBtn{
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:40px;padding:7px 16px;cursor:pointer;font-size:.85rem;
+  display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap
+}
+#syncBtn:hover{background:rgba(255,255,255,.28)}
+#syncBtn svg{transition:transform .6s}
+#syncBtn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Stats ── */
+#statsBar{
+  display:flex;gap:12px;padding:16px 24px;flex-wrap:wrap;
+  background:linear-gradient(180deg,rgba(79,70,229,.07),transparent)
+}
+.stat{
+  background:#fff;border-radius:var(--radius);padding:12px 20px;
+  display:flex;flex-direction:column;gap:2px;flex:1;min-width:110px;
+  box-shadow:var(--shadow-sm);border-top:3px solid transparent
+}
+.stat.total{border-color:var(--primary)}
+.stat.present{border-color:var(--success)}
+.stat.absent{border-color:var(--danger)}
+.stat.late{border-color:var(--warn)}
+.stat.pct{border-color:var(--info)}
+.stat-val{font-size:1.5rem;font-weight:700;line-height:1}
+.stat-lbl{font-size:.73rem;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.stat.total .stat-val{color:var(--primary)}
+.stat.present .stat-val{color:var(--success)}
+.stat.absent .stat-val{color:var(--danger)}
+.stat.late .stat-val{color:var(--warn)}
+.stat.pct .stat-val{color:var(--info)}
+
+/* ── Controls ── */
+#controls{
+  display:flex;gap:10px;padding:0 24px 14px;flex-wrap:wrap;align-items:flex-end
+}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.4}
+#searchInput{
+  width:100%;border:1.5px solid #e5e7eb;border-radius:40px;
+  padding:9px 14px 9px 38px;font-size:.9rem;outline:none;transition:.2s
+}
+#searchInput:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+select.filter{
+  border:1.5px solid #e5e7eb;border-radius:40px;
+  padding:9px 14px;font-size:.85rem;outline:none;cursor:pointer;background:#fff;
+  transition:.2s;max-width:160px
+}
+select.filter:focus{border-color:var(--primary)}
+#bulkPresent{
+  background:var(--success);color:#fff;border:none;border-radius:40px;
+  padding:9px 18px;font-size:.85rem;cursor:pointer;font-weight:600;
+  display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap
+}
+#bulkPresent:hover{background:#15803d}
+
+/* ── Progress bar ── */
+#progressWrap{padding:0 24px 10px}
+#progressBar{height:6px;background:#e5e7eb;border-radius:10px;overflow:hidden}
+#progressFill{height:100%;background:linear-gradient(90deg,var(--success),#22c55e);border-radius:10px;transition:width .5s ease}
+
+/* ── Students Container ── */
+#listWrap{flex:1;padding:0 24px 24px;overflow-y:auto}
+#studentList{display:flex;flex-direction:column;gap:8px}
+
+/* ── Student Card ── */
+.s-card{
+  background:#fff;border-radius:var(--radius);padding:14px 16px;
+  display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;
+  box-shadow:var(--shadow-sm);transition:.2s;border:1.5px solid transparent;
+  cursor:default
+}
+.s-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow)}
+.s-card.marked-P{border-left:4px solid var(--success)}
+.s-card.marked-A{border-left:4px solid var(--danger)}
+.s-card.marked-T{border-left:4px solid var(--warn)}
+.s-card.marked-J{border-left:4px solid var(--info)}
+.s-num{
+  width:36px;height:36px;border-radius:50%;background:var(--primary-light);
+  color:var(--primary);font-weight:700;font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.s-info{min-width:0}
+.s-name{font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-meta{font-size:.75rem;color:var(--gray);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+
+/* ── Attendance Buttons ── */
+.att-btn{
+  border:none;border-radius:30px;padding:6px 13px;
+  font-size:.78rem;font-weight:700;cursor:pointer;transition:.15s;letter-spacing:.3px
+}
+.att-btn.btn-P{background:var(--success-bg);color:var(--success)}
+.att-btn.btn-A{background:var(--danger-bg);color:var(--danger)}
+.att-btn.btn-T{background:var(--warn-bg);color:var(--warn)}
+.att-btn.btn-J{background:var(--info-bg);color:var(--info)}
+.att-btn.active{color:#fff;transform:scale(1.08)}
+.att-btn.btn-P.active{background:var(--success)}
+.att-btn.btn-A.active{background:var(--danger)}
+.att-btn.btn-T.active{background:var(--warn)}
+.att-btn.btn-J.active{background:var(--info)}
+.att-btn:hover{opacity:.85}
+.att-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ── History mini dots ── */
+.s-history{
+  display:flex;gap:3px;flex-wrap:wrap;margin-top:4px
+}
+.h-dot{
+  width:16px;height:16px;border-radius:4px;
+  font-size:.6rem;font-weight:700;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:default;flex-shrink:0
+}
+.h-dot.P{background:var(--success)}
+.h-dot.A{background:var(--danger)}
+.h-dot.T{background:var(--warn)}
+.h-dot.J{background:var(--info)}
+.h-dot.empty{background:#e5e7eb;color:#aaa}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:#1e1b4b;color:#fff;border-radius:var(--radius);
+  padding:12px 20px;font-size:.9rem;box-shadow:var(--shadow);
+  transform:translateY(80px);opacity:0;transition:.3s;pointer-events:none;
+  display:flex;align-items:center;gap:8px
+}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.ok::before{content:'✅'}
+#toast.err::before{content:'❌'}
+#toast.info::before{content:'ℹ️'}
+
+/* ── Loading overlay ── */
+#loadingOverlay{
+  position:fixed;inset:0;background:rgba(240,242,255,.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;z-index:100;backdrop-filter:blur(4px)
+}
+#loadingOverlay.hidden{display:none}
+.spinner{
+  width:48px;height:48px;border:4px solid var(--primary-light);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite
+}
+.loading-text{color:var(--primary);font-weight:600;font-size:1rem}
+
+/* ── Empty state ── */
+#emptyState{
+  text-align:center;padding:60px 20px;color:var(--gray);display:none
+}
+#emptyState svg{opacity:.3;margin-bottom:12px}
+#emptyState p{font-size:1rem}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  header{padding:12px 16px}
+  #statsBar,#controls,#listWrap,#progressWrap{padding-left:12px;padding-right:12px}
+  .s-card{grid-template-columns:32px 1fr;gap:10px}
+  .s-actions{grid-column:1/-1;justify-content:flex-start}
+  .stat{min-width:80px;padding:10px 12px}
+  .stat-val{font-size:1.2rem}
+  #dayPicker{padding:5px 10px}
+}
+
+/* ── Unsaved badge ── */
+#unsavedBadge{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  background:var(--warn);color:#fff;padding:6px 18px;border-radius:40px;
+  font-size:.82rem;font-weight:600;box-shadow:var(--shadow);
+  display:none;z-index:50;align-items:center;gap:8px
+}
+#unsavedBadge.visible{display:flex}
+#saveNowBtn{background:rgba(255,255,255,.25);border:none;color:#fff;
+  border-radius:20px;padding:3px 10px;cursor:pointer;font-size:.8rem;font-weight:600}
+</style>
+</head>
+<body>
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p class="loading-text">Cargando sistema de asistencia…</p>
+</div>
+
+<div id="unsavedBadge">
+  <span>⚠️ Cambios sin guardar</span>
+  <button id="saveNowBtn" onclick="saveAll()">Guardar ahora</button>
+</div>
+
+<div id="app">
+  <!-- HEADER -->
+  <header>
+    <h1>📋 Asistencia <span id="headerDate"></span></h1>
+    <div id="dayPicker">
+      <label>DÍA:</label>
+      <select id="daySelect">
+        <!-- filled by JS -->
+      </select>
+    </div>
+    <button id="syncBtn" onclick="loadData()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A8 8 0 0120 12M3.42 15A8 8 0 0020 15"/>
+      </svg>
+      Actualizar
+    </button>
+  </header>
+
+  <!-- STATS -->
+  <div id="statsBar">
+    <div class="stat total"><span class="stat-val" id="sTotal">0</span><span class="stat-lbl">Total</span></div>
+    <div class="stat present"><span class="stat-val" id="sPresent">0</span><span class="stat-lbl">Presentes</span></div>
+    <div class="stat absent"><span class="stat-val" id="sAbsent">0</span><span class="stat-lbl">Ausentes</span></div>
+    <div class="stat late"><span class="stat-val" id="sLate">0</span><span class="stat-lbl">Tarde</span></div>
+    <div class="stat pct"><span class="stat-val" id="sPct">0%</span><span class="stat-lbl">Asistencia</span></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progressWrap">
+    <div id="progressBar"><div id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div id="controls">
+    <div class="search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, ID, colegio…" oninput="applyFilters()"/>
+    </div>
+    <select class="filter" id="filterColegio" onchange="applyFilters()">
+      <option value="">Todos los colegios</option>
+    </select>
+    <select class="filter" id="filterJornada" onchange="applyFilters()">
+      <option value="">Todas las jornadas</option>
+    </select>
+    <select class="filter" id="filterCurso" onchange="applyFilters()">
+      <option value="">Todos los cursos</option>
+    </select>
+    <select class="filter" id="filterStatus" onchange="applyFilters()">
+      <option value="ALL">Todos los estados</option>
+      <option value="P">✅ Presentes</option>
+      <option value="A">❌ Ausentes</option>
+      <option value="T">⏰ Tarde</option>
+      <option value="J">📋 Justificados</option>
+      <option value="EMPTY">Sin marcar</option>
+    </select>
+    <button id="bulkPresent" onclick="markAllVisible()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      Marcar todos ✅
+    </button>
+  </div>
+
+  <!-- LIST -->
+  <div id="listWrap">
+    <div id="studentList"></div>
+    <div id="emptyState">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="#6b7280" stroke-width="1.2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
+      </svg>
+      <p>No se encontraron estudiantes con esos filtros.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  Estado global
+// ══════════════════════════════════════════════════
+let allStudents   = [];
+let allHeaders    = [];
+let visibleIds    = []; // _row values of visible students
+let currentDay    = 'DIA 4';
+let pendingSaves  = {};  // row -> value (cache local)
+let saveTimer     = null;
+
+const DAY_COLS = Array.from({length:14},(_,i)=>`DIA ${i+1}`);
+const ATT_VALUES = new Set(['', 'P', 'A', 'T', 'J']);
+
+function esc(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ══════════════════════════════════════════════════
+//  Arrancar
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Fecha
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    '— ' + now.toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+  // Selector de días
+  const sel = document.getElementById('daySelect');
+  DAY_COLS.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+
+  sel.addEventListener('change', () => {
+    currentDay = sel.value;
+    renderList();
+    updateStats();
+  });
+
+  loadData();
+
+  // Auto-guardar cada 30 s si hay pendientes
+  setInterval(() => { if (Object.keys(pendingSaves).length > 0) saveAll(); }, 30000);
+});
+
+// ══════════════════════════════════════════════════
+//  Cargar datos desde Sheets
+// ══════════════════════════════════════════════════
+function loadData() {
+  document.getElementById('syncBtn').classList.add('spinning');
+  google.script.run
+    .withSuccessHandler(onDataLoaded)
+    .withFailureHandler(onError)
+    .getStudents();
+}
+
+function onDataLoaded(result) {
+  document.getElementById('syncBtn').classList.remove('spinning');
+  document.getElementById('loadingOverlay').classList.add('hidden');
+
+  allHeaders  = result.headers;
+  allStudents = result.students;
+
+  // Detectar día activo
+  google.script.run
+    .withSuccessHandler(d => {
+      currentDay = `DIA ${d}`;
+      document.getElementById('daySelect').value = currentDay;
+      populateFilters();
+      applyFilters();
+    })
+    .withFailureHandler(() => {
+      currentDay = 'DIA 1';
+      populateFilters();
+      applyFilters();
+    })
+    .getActiveDay();
+}
+
+// ══════════════════════════════════════════════════
+//  Filtros
+// ══════════════════════════════════════════════════
+function populateFilters() {
+  const colegios = [...new Set(allStudents.map(s => s['COLEGIO']).filter(Boolean))].sort();
+  const jornadas = [...new Set(allStudents.map(s => s['JORNADA']).filter(Boolean))].sort();
+  const cursos   = [...new Set(allStudents.map(s => s['CURSO']).filter(Boolean))].sort();
+
+  fillSelect('filterColegio', colegios, 'Todos los colegios');
+  fillSelect('filterJornada', jornadas, 'Todas las jornadas');
+  fillSelect('filterCurso',   cursos,   'Todos los cursos');
+}
+
+function fillSelect(id, values, placeholder) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
+
+function applyFilters() {
+  const q        = document.getElementById('searchInput').value.toLowerCase();
+  const colegio  = document.getElementById('filterColegio').value;
+  const jornada  = document.getElementById('filterJornada').value;
+  const curso    = document.getElementById('filterCurso').value;
+  const status   = document.getElementById('filterStatus').value;
+
+  const filtered = allStudents.filter(s => {
+    const name = String(s['NOMBRES Y APELLIDOS']||'').toLowerCase();
+    const id   = String(s['NO ID']||'').toLowerCase();
+    const col  = String(s['COLEGIO']||'').toLowerCase();
+    if (q && !name.includes(q) && !id.includes(q) && !col.includes(q)) return false;
+    if (colegio && s['COLEGIO'] !== colegio) return false;
+    if (jornada && s['JORNADA'] !== jornada) return false;
+    if (curso   && s['CURSO']   !== curso)   return false;
+
+    const attVal = getVal(s, currentDay);
+    if (status !== 'ALL') {
+      if (status === 'EMPTY') {
+        if (attVal !== '') return false;
+      } else if (attVal !== status) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  visibleIds = filtered.map(s => s._row);
+  renderList(filtered);
+  updateStats();
+}
+
+// ══════════════════════════════════════════════════
+//  Render
+// ══════════════════════════════════════════════════
+function getVal(student, col) {
+  // Check pendingSaves first (local override)
+  const key = `${student._row}__${col}`;
+  const value = key in pendingSaves ? pendingSaves[key] : String(student[col] || '');
+  return ATT_VALUES.has(value) ? value : '';
+}
+
+function renderList(students) {
+  if (students === undefined) {
+    // re-apply current filter
+    applyFilters();
+    return;
+  }
+
+  const container = document.getElementById('studentList');
+  const empty     = document.getElementById('emptyState');
+
+  if (students.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  container.innerHTML = students.map(s => buildCard(s)).join('');
+}
+
+function buildCard(s) {
+  const attVal  = getVal(s, currentDay);
+  const marked  = attVal ? `marked-${attVal}` : '';
+  const rowId   = `row-${s._row}`;
+
+  // History dots
+  const dots = DAY_COLS.map((d, i) => {
+    const v = getVal(s, d);
+    const cls = v || 'empty';
+    return `<div class="h-dot ${cls}" title="DIA ${i+1}: ${esc(v||'—')}">${esc(v||'·')}</div>`;
+  }).join('');
+
+  const name   = s['NOMBRES Y APELLIDOS'] || '—';
+  const unit   = s['UNIDAD #'] || '?';
+  const noid   = s['NO ID']   || '';
+  const cel    = s['CELULAR'] || '';
+  const col    = s['COLEGIO'] || '';
+  const jor    = s['JORNADA'] || '';
+  const cur    = s['CURSO']   || '';
+  const sse    = s['SSE/VOL'] || '';
+  const meta   = [noid, col, jor ? `Jornada ${jor}` : '', cur, sse].filter(Boolean).join(' · ');
+
+  const mkBtn = (code, label) => {
+    const active = attVal === code ? 'active' : '';
+    return `<button class="att-btn btn-${code} ${active}" 
+      onclick="toggleAtt(${s._row},'${code}',this)"
+        data-row="${s._row}" data-code="${code}">${label}</button>`;
+  };
+
+  return `
+  <div class="s-card ${marked}" id="${rowId}">
+    <div class="s-num">${esc(unit)}</div>
+    <div class="s-info">
+      <div class="s-name">${esc(name)}</div>
+      <div class="s-meta">${esc(meta)}</div>
+      <div class="s-history">${dots}</div>
+    </div>
+    <div class="s-actions">
+      ${mkBtn('P','✅ P')}
+      ${mkBtn('A','❌ A')}
+      ${mkBtn('T','⏰ T')}
+      ${mkBtn('J','📋 J')}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════
+//  Marcar asistencia
+// ══════════════════════════════════════════════════
+function toggleAtt(rowNum, code, btn) {
+  // Encuentra el estudiante
+  const s = allStudents.find(x => x._row === rowNum);
+  if (!s) return;
+
+  const key    = `${rowNum}__${currentDay}`;
+  const curVal = getVal(s, currentDay);
+  const newVal = curVal === code ? '' : code; // toggle
+
+  // Update local cache
+  pendingSaves[key] = newVal;
+
+  // Update student obj in memory
+  s[currentDay] = newVal;
+
+  // Re-render just this card
+  const card = document.getElementById(`row-${rowNum}`);
+  if (card) {
+    card.outerHTML = buildCard(s);
+    // Re-attach (DOM replaced, no listener needed – inline onclick)
+  }
+
+  updateStats();
+  showUnsaved();
+  scheduleSave();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveAll, 3000); // auto-save after 3 s of inactivity
+}
+
+function saveAll() {
+  const keys = Object.keys(pendingSaves);
+  if (keys.length === 0) return;
+
+  const updates = keys.map(k => {
+    const [row, day] = k.split('__');
+    return { rowNumber: parseInt(row), dayColumn: day, value: pendingSaves[k] };
+  });
+
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res.success) {
+        pendingSaves = {};
+        hideUnsaved();
+        showToast(`Guardado correctamente (${res.updated} cambios)`, 'ok');
+      } else {
+        showToast('Error al guardar: ' + res.error, 'err');
+      }
+    })
+    .withFailureHandler(e => showToast('Error de conexión: ' + e.message, 'err'))
+    .markBulkAttendance(updates);
+}
+
+function markAllVisible() {
+  if (visibleIds.length === 0) { showToast('No hay estudiantes visibles', 'info'); return; }
+
+  visibleIds.forEach(rowNum => {
+    const s = allStudents.find(x => x._row === rowNum);
+    if (!s) return;
+    const key = `${rowNum}__${currentDay}`;
+    pendingSaves[key] = 'P';
+    s[currentDay] = 'P';
+  });
+
+  // Re-render visible cards
+  renderList(allStudents.filter(s => visibleIds.includes(s._row)));
+  updateStats();
+  showUnsaved();
+  scheduleSave();
+  showToast(`${visibleIds.length} estudiantes marcados como Presentes ✅`, 'ok');
+}
+
+// ══════════════════════════════════════════════════
+//  Stats
+// ══════════════════════════════════════════════════
+function updateStats() {
+  const visible = allStudents.filter(s => visibleIds.includes(s._row));
+  const total   = visible.length;
+  const present = visible.filter(s => getVal(s, currentDay) === 'P').length;
+  const absent  = visible.filter(s => getVal(s, currentDay) === 'A').length;
+  const late    = visible.filter(s => getVal(s, currentDay) === 'T').length;
+  const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+
+  document.getElementById('sTotal').textContent   = total;
+  document.getElementById('sPresent').textContent = present;
+  document.getElementById('sAbsent').textContent  = absent;
+  document.getElementById('sLate').textContent    = late;
+  document.getElementById('sPct').textContent     = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════════════════
+//  Toast & UI helpers
+// ══════════════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+function showUnsaved() { document.getElementById('unsavedBadge').classList.add('visible'); }
+function hideUnsaved() { document.getElementById('unsavedBadge').classList.remove('visible'); }
+
+function onError(e) {
+  document.getElementById('syncBtn').classList.remove('spinning');
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  showToast('Error al conectar con Google Sheets: ' + (e.message || e), 'err');
+}
+</script>
+</body>
+</html>

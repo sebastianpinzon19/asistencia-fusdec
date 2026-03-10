@@ -1,0 +1,15 @@
+credentials.json
+service_account.json
+token.json
+__pycache__/
+*.pyc
+.env
+.env.*
+venv/
+.venv/
+.vercel
+*.pem
+*.key
+*_secret*.json
+*service_account*.json
+*.apps.googleusercontent.com.json

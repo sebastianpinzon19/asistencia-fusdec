@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro de Cambios — Asistencia Ensueño</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --border: rgba(255,255,255,0.08);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --accent2: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --yellow: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .header-title { font-size: 16px; font-weight: 600; }
+    .header-subtitle { font-size: 12px; color: var(--muted); }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(99,102,241,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(99,102,241,0.3);
+      padding: 8px 16px; border-radius: 8px;
+      text-decoration: none; font-size: 13px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { background: rgba(99,102,241,0.25); }
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 6px 12px 6px 6px;
+      border-radius: 20px; font-size: 13px;
+    }
+    .user-chip img { width: 28px; height: 28px; border-radius: 50%; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    /* MAIN */
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+
+    .page-title {
+      font-size: 24px; font-weight: 700; margin-bottom: 4px;
+    }
+    .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+    /* STATS */
+    .stats-row {
+      display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      flex: 1; min-width: 140px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-value.purple { color: var(--accent); }
+
+    /* FILTER */
+    .filter-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .filter-bar input { flex: 1; min-width: 200px; }
+    .filter-bar input:focus, .filter-bar select:focus {
+      border-color: var(--accent);
+    }
+    .filter-bar select option { background: var(--surface2); }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: rgba(99,102,241,0.1);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+    tbody td {
+      padding: 12px 16px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 6px;
+      font-weight: 700; font-size: 14px;
+    }
+    .badge.present { background: rgba(16,185,129,0.15); color: var(--green); }
+    .badge.absent  { background: rgba(239,68,68,0.15);  color: var(--red); }
+    .badge.excuse  { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .badge.clear   { background: rgba(148,163,184,0.1); color: var(--muted); }
+
+    .email-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(139,92,246,0.1);
+      border: 1px solid rgba(139,92,246,0.2);
+      color: #a78bfa;
+      padding: 3px 8px; border-radius: 20px;
+      font-size: 12px; font-weight: 500;
+    }
+    .time-cell { color: var(--muted); font-size: 12px; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; }
+
+    /* PAGINATION */
+    .table-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      font-size: 13px; color: var(--muted);
+    }
+    #pageInfo { font-weight: 500; }
+    .page-btns { display: flex; gap: 6px; }
+    .page-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px;
+      padding: 5px 12px; cursor: pointer; font-size: 12px;
+      transition: all 0.15s;
+    }
+    .page-btn:hover:not(:disabled) { background: rgba(99,102,241,0.2); border-color: var(--accent); }
+    .page-btn:disabled { opacity: 0.4; cursor: default; }
+
+    @media (max-width: 600px) {
+      main { padding: 16px 12px; }
+      .stats-row { gap: 10px; }
+      thead th:nth-child(4), tbody td:nth-child(4),
+      thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo">📋</div>
+    <div>
+      <div class="header-title">Registro de Cambios</div>
+      <div class="header-subtitle">Auditoría de asistencia</div>
+    </div>
+  </div>
+  <div class="header-right">
+    {% if user %}
+    <div class="user-chip">
+      {% if user.picture %}<img src="{{ user.picture }}" alt=""/>{% endif %}
+      {{ (user.name or user.email or 'U').split()[0] }}
+    </div>
+    {% endif %}
+    <a href="/" class="back-btn">← Volver</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">Historial de cambios</div>
+  <div class="page-sub">Todos los cambios de asistencia registrados en el sistema</div>
+
+  {% set total = entries|length %}
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total cambios</div>
+      <div class="stat-value purple">{{ total }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Usuarios activos</div>
+      <div class="stat-value blue" id="uniqueUsers">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Hoy</div>
+      <div class="stat-value green" id="todayCount">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Última actividad</div>
+      <div class="stat-value" id="lastActivity" style="font-size:14px;padding-top:4px;">—</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍  Buscar por email, nombre o estudiante..." oninput="applyFilter()"/>
+    <select id="filterEmail" onchange="applyFilter()">
+      <option value="">Todos los usuarios</option>
+    </select>
+    <select id="filterBrigada" onchange="applyFilter()">
+      <option value="">Todas las brigadas</option>
+    </select>
+    <select id="filterDay" onchange="applyFilter()">
+      <option value="">Todos los días</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table id="logsTable">
+      <thead>
+        <tr>
+          <th>Fecha / Hora</th>
+          <th>Usuario</th>
+          <th>Brigada</th>
+          <th>Estudiante</th>
+          <th>Día</th>
+          <th>Asistencia</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <span id="pageInfo"></span>
+      <div class="page-btns">
+        <button class="page-btn" id="btnPrev" onclick="prevPage()">← Anterior</button>
+        <button class="page-btn" id="btnNext" onclick="nextPage()">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+/*
+  Column layout (new, 9 cols):
+  0:FECHA  1:HORA  2:EMAIL  3:NOMBRE  4:BRIGADA  5:FILA  6:ESTUDIANTE  7:DIA  8:ASISTENCIA
+  Old rows (8 cols, before BRIGADA was added):
+  0:FECHA  1:HORA  2:EMAIL  3:NOMBRE  4:FILA  5:ESTUDIANTE  6:DIA  7:ASISTENCIA
+*/
+const RAW = JSON.parse(document.getElementById('entries-data').textContent || '[]');
+const PAGE_SIZE = 50;
+let filtered = [...RAW];
+let currentPage = 0;
+
+// Normalise a raw row to a consistent object regardless of old/new format
+function norm(r) {
+  if (r.length >= 9) {
+    return { fecha:r[0], hora:r[1], email:r[2], nombre:r[3],
+             brigada:r[4], fila:r[5], estudiante:r[6], dia:r[7], att:r[8] };
+  }
+  // old 8-col format
+  return { fecha:r[0], hora:r[1], email:r[2], nombre:r[3],
+           brigada:'', fila:r[4], estudiante:r[5], dia:r[6], att:r[7] };
+}
+
+function badgeFor(val) {
+  if (val === '✓') return '<span class="badge present">✓</span>';
+  if (val === '×') return '<span class="badge absent">×</span>';
+  if (val === 'E') return '<span class="badge excuse">E</span>';
+  if (!val || val === '') return '<span class="badge clear">—</span>';
+  return `<span class="badge clear">${val}</span>`;
+}
+
+function populate() {
+  const NORM = RAW.map(norm);
+  const emails   = [...new Set(NORM.map(r => r.email).filter(Boolean))].sort();
+  const brigadas = [...new Set(NORM.map(r => r.brigada).filter(Boolean))].sort();
+  const days     = [...new Set(NORM.map(r => r.dia).filter(Boolean))].sort((a,b)=>{
+    const na = parseInt(a.replace(/\D/g,'')), nb = parseInt(b.replace(/\D/g,''));
+    return na - nb;
+  });
+  const selEmail   = document.getElementById('filterEmail');
+  const selBrigada = document.getElementById('filterBrigada');
+  const selDay     = document.getElementById('filterDay');
+  emails.forEach(e   => { const o=document.createElement('option'); o.value=e; o.textContent=e; selEmail.appendChild(o); });
+  brigadas.forEach(b => { const o=document.createElement('option'); o.value=b; o.textContent=b; selBrigada.appendChild(o); });
+  days.forEach(d     => { const o=document.createElement('option'); o.value=d; o.textContent=d; selDay.appendChild(o); });
+
+  document.getElementById('uniqueUsers').textContent = emails.length;
+  const d = new Date();
+  const todayFmt = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+  document.getElementById('todayCount').textContent = NORM.filter(r => r.fecha === todayFmt).length;
+  if (NORM.length > 0) {
+    const last = NORM[0];
+    document.getElementById('lastActivity').textContent = last.hora + ' — ' + (last.email||'').split('@')[0];
+  }
+}
+
+function applyFilter() {
+  const q       = document.getElementById('searchInput').value.toLowerCase();
+  const email   = document.getElementById('filterEmail').value;
+  const brigada = document.getElementById('filterBrigada').value;
+  const day     = document.getElementById('filterDay').value;
+  filtered = RAW.map(norm).filter(r => {
+    const matchQ = !q || [r.email, r.nombre, r.estudiante, r.brigada].some(v => (v||'').toLowerCase().includes(q));
+    const matchE = !email   || r.email   === email;
+    const matchB = !brigada || r.brigada === brigada;
+    const matchD = !day     || r.dia     === day;
+    return matchQ && matchE && matchB && matchD;
+  });
+  currentPage = 0;
+  render();
+}
+
+function render() {
+  const tbody = document.getElementById('tableBody');
+  const start = currentPage * PAGE_SIZE;
+  const slice = filtered.slice(start, start + PAGE_SIZE);
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">📭</div><p>No hay registros que coincidan</p></div></td></tr>';
+    document.getElementById('pageInfo').textContent = '0 resultados';
+    document.getElementById('btnPrev').disabled = true;
+    document.getElementById('btnNext').disabled = true;
+    return;
+  }
+  tbody.innerHTML = slice.map(r => `
+    <tr>
+      <td class="time-cell">${r.fecha || ''}<br/><strong>${r.hora || ''}</strong></td>
+      <td>
+        <div class="email-pill">✉ ${r.email || ''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${r.nombre || ''}</div>
+      </td>
+      <td style="color:var(--muted);font-size:12px">${r.brigada || '—'}</td>
+      <td>${r.estudiante || ''}</td>
+      <td style="color:var(--muted)">${r.dia || ''}</td>
+      <td>${badgeFor(r.att)}</td>
+    </tr>
+  `).join('');
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  document.getElementById('pageInfo').textContent =
+    `${start+1}–${Math.min(start+PAGE_SIZE, total)} de ${total} registros`;
+  document.getElementById('btnPrev').disabled = currentPage === 0;
+  document.getElementById('btnNext').disabled = currentPage >= totalPages - 1;
+}
+
+function prevPage() { if (currentPage > 0) { currentPage--; render(); } }
+function nextPage() {
+  if ((currentPage+1) * PAGE_SIZE < filtered.length) { currentPage++; render(); }
+}
+
+populate();
+applyFilter();
+</script>
+</body>
+</html>
