@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: asistencia-fusdec
+    runtime: python
+    rootDir: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    healthCheckPath: /api/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_HOURS
+        value: "12"
+      - key: REDIRECT_URI
+        sync: false
+      - key: ALLOWED_EMAILS
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false

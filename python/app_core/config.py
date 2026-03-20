@@ -3,8 +3,11 @@ import secrets
 from datetime import timedelta
 from pathlib import Path
 
-# Solo activar transporte inseguro en desarrollo local (no en Vercel)
-if not os.environ.get("VERCEL"):
+IS_RENDER = bool(os.environ.get("RENDER"))
+IS_PROD = bool(os.environ.get("VERCEL")) or IS_RENDER or os.environ.get("FLASK_ENV") == "production"
+
+# Solo activar transporte inseguro en desarrollo local
+if not IS_PROD:
     os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
 
 SPREADSHEET_ID = "1Jkk4yHJTLGF9LwYrrw5qkLy4PaKi5hJT_eiOnWg7LbE"
@@ -25,7 +28,6 @@ SHEET_SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-IS_PROD = bool(os.environ.get("VERCEL")) or os.environ.get("FLASK_ENV") == "production"
 APP_DEBUG = os.environ.get("APP_DEBUG", "").strip().lower() in {"1", "true", "yes"}
 
 
