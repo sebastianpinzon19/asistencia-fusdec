@@ -4,7 +4,8 @@ from datetime import timedelta
 from pathlib import Path
 
 IS_RENDER = bool(os.environ.get("RENDER"))
-IS_PROD = bool(os.environ.get("VERCEL")) or IS_RENDER or os.environ.get("FLASK_ENV") == "production"
+IS_CLOUD_RUN = bool(os.environ.get("K_SERVICE"))
+IS_PROD = bool(os.environ.get("VERCEL")) or IS_RENDER or IS_CLOUD_RUN or os.environ.get("FLASK_ENV") == "production"
 
 # Solo activar transporte inseguro en desarrollo local
 if not IS_PROD:
