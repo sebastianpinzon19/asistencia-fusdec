@@ -1,6 +1,8 @@
 from .config import DAY_COLS
 
-ATTENDANCE_VALUES = {"", "✓", "×", "E", "P", "A", "T", "J"}
+# Valores permitidos de asistencia - simplificados y consistentes
+# "" = sin marcar, "✓" = presente, "×" = ausente, "E" = excusa
+ATTENDANCE_VALUES = {"", "✓", "×", "E"}
 
 DEMO_HEADERS = [
     "UNIDAD #",

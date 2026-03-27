@@ -33,9 +33,13 @@ from .sheets import (
 
 
 def error_payload(public_msg, exc=None):
+    """Genera un payload de error consistente para respuestas API."""
     payload = {"success": False, "error": public_msg}
     if APP_DEBUG and exc is not None:
         payload["detail"] = str(exc)
+        if hasattr(exc, "__traceback__"):
+            import traceback as tb
+            payload["traceback"] = tb.format_exception(type(exc), exc, exc.__traceback__)[-3:]
     return payload
 
 
@@ -198,11 +202,11 @@ def register_routes(app):
         brigada = data.get("brigada", "").strip()
 
         if not isinstance(updates, list):
-            return jsonify({"success": False, "error": "Formato de updates inválido"}), 400
+            return jsonify({"success": False, "error": "Formato de updates invalido"}), 400
         if len(updates) > 2000:
-            return jsonify({"success": False, "error": "Demasiados cambios en una sola solicitud"}), 400
+            return jsonify({"success": False, "error": "Demasiados cambios en una sola solicitud (max 2000)"}), 400
         if not updates:
-            return jsonify({"success": True, "updated": 0})
+            return jsonify({"success": True, "updated": 0, "message": "Sin cambios pendientes"})
 
         try:
             import gspread

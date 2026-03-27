@@ -94,10 +94,27 @@ def detect_active_day(students):
 
 
 def normalize_attendance_value(value):
+    """Normaliza valores de asistencia, permitiendo variantes comunes."""
     raw = "" if value is None else str(value).strip()
+    
+    # Mapeo de valores alternativos a valores estandar
+    ALIASES = {
+        "P": "✓", "p": "✓", "1": "✓", "presente": "✓", "PRESENTE": "✓",
+        "A": "×", "a": "×", "0": "×", "ausente": "×", "AUSENTE": "×", "X": "×", "x": "×",
+        "e": "E", "excusa": "E", "EXCUSA": "E", "J": "E", "j": "E",
+        "": "", " ": "",
+    }
+    
+    # Primero verificar si es un valor directo permitido
     if raw in ATTENDANCE_VALUES:
         return raw
-    raise ValueError(f"Valor de asistencia inválido: {raw}")
+    
+    # Luego verificar aliases
+    if raw in ALIASES:
+        return ALIASES[raw]
+    
+    # Si no es reconocido, limpiar el valor en lugar de fallar
+    return ""
 
 
 def parse_update_item(item):
