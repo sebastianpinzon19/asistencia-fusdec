@@ -1,23 +1,29 @@
 import { google } from 'googleapis'
 
-const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || '1Jkk4yHJTLGF9LwYrrw5qkLy4PaKi5hJT_eiOnWg7LbE'
+const SPREADSHEET_ID = '1Jkk4yHJTLGF9LwYrrw5qkLy4PaKi5hJT_eiOnWg7LbE'
 const SHEET_GID = 1547008662
 export const DAY_COLS = Array.from({ length: 14 }, (_, i) => `DIA ${i + 1}`)
 
 // Valores de asistencia permitidos
 export const ATTENDANCE_VALUES = new Set(['', '\u2713', '\u00d7', 'E'])
 
+// Credenciales de servicio
+const SERVICE_ACCOUNT_CREDENTIALS = {
+  type: "service_account",
+  project_id: "thinking-banner-489220-d9",
+  private_key_id: "c8e7859b68a0442a2ce30b17f46f23b39718ef31",
+  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJAQ66Qs4dxeq6\nlT2ZDl2kFa8vbWi3LHNdaS23OhsM0R0z8lrqDyXSqTbuwHI0RckZ9nH5jVzSoI0G\ny5WjbtwavQzq0HSD5tvYd3WNcvd6AUjGQ8eLZF8UXHXM3b2bziE+YVixu6wj3fGM\nwb3vbErYV23QiaBLJ8fW7nBJCmX2TMG6WEePvGketNyh4OXajJi0RlksCT0010wK\nYRrg416p1iyLO/UOQG221BD7o6LN5akunBj/y1eDAWGcqoMtKqqy1ogCWqZvj+9N\nwi0xOSUGIz9K/jiSamwJOF991eft7L9kSJFHk7rlT13oO2NWVL/SxeUfV728h2v6\nagLUnjelAgMBAAECggEAAL0XwZh4QG9sluXwgCz81sWw9fLSz9rXy6/qF+0ckgCn\nY6b62DcDs7v6dIh8LZ6qCAXkp6mc0zX9fq5l14q96qfnhxS1W5IQHGyyn7lHQ96t\nq/ODerV84fVwW2HfOKuFFMEafdYLjRAw5eGvtymwjA36MdTSTs8PyBrqimIsO2pN\ndbVfRoHaG1QWLmx596koeeb8s80oc5rFcHWGiy8JSURQxlXfjHNsuLtqU4VytM9f\nX2gtP9FTTWrVIGqsW9YnTn1x/70M5YmaK9rfXgmq3F8944lBzSrUlPOgrLALrx3x\nvHPqRZ4Fh1QUIqsGoTHRp5MClQetdoWbyuhKiVse2wKBgQDn1/+XHdtjC1fJlevv\nSAsubhrXIJfkVmOIs7vF8doFWuVBDiGcciauKmK1d4TLfzT+XGkDjwZswQtQT8tM\nf9OA7hr5E0Ha7DIsHmjzp9YEwqlnFwwwYJeUIC2PG3+aNSNhsh9FYVFu3uK+Gz9y\nSmr5nepHM14PCLZejzDRIi4glwKBgQDd8ng9xYqf1pGBDbzrFokQkMtf5mMVF0L/\nJtlqJd83U0MUQLXXSnT7FfPdRDo8jBTsmwymiujuOFbtx65g1NWuqj6rnboL6CxK\nDRwLZIAcgE+UaJW5ysCCCnsAPLjD5MN/pLacS/4chxuFrDb5fjzYvrFJMghk98Vh\nMyam0oO1IwKBgH3dQrHMkLztfIRA8uxdhUx4k/O0iyF4UOL3CHrG+OCtXwZ5YH/p\nbNxiwGHZ9+ruLVvl2VEIRamnB7hbCXiHcNBu84/DB56NWhOfksSsmkDNWWBRH9nn\npoLREUq+2ABk1seEBvwIgEgbkqc4bbJjej33oCd1WJv60970B8GRt88TAoGBAJx0\nLdqtg9jEsnEctA2sJxasWxDRIQtfCHVAd4ZiCAXCBckjDIwlCm1svik9zSedP6rC\naZqE1UoIIQ8g8YWEwtSLYf4sA1gdZAsXTquhPsXYlUBysQj1KdsBdE9ofn5opn82\nJxvqXcjSXM5P5bjeChpn4iVMxaoXFuY73oU+ZGWtAoGAT8T3nSIdPbeqxrqi0DZm\nMikez3Ymz52IR9B6aYbDkeP8xQTCZgEb/wqaw+O3nJJFy0cmBZD6iqW3LAAGz27J\nQtmBsqIdPGCCl8LZs8lIC/vVwxDLNlu8C9DxKkLO5ycFwrUsNxi1xAHOy0c/PIKk\ntSNEMfC8dSswc+4wbFpWikQ=\n-----END PRIVATE KEY-----\n",
+  client_email: "asistencia-sheets@thinking-banner-489220-d9.iam.gserviceaccount.com",
+  client_id: "112367656560489453396",
+  auth_uri: "https://accounts.google.com/o/oauth2/auth",
+  token_uri: "https://oauth2.googleapis.com/token",
+  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+  client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/asistencia-sheets%40thinking-banner-489220-d9.iam.gserviceaccount.com",
+  universe_domain: "googleapis.com"
+}
+
 function getServiceAccountCredentials() {
-  const envJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
-  if (!envJson) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON no configurado')
-  }
-  
-  try {
-    return JSON.parse(envJson)
-  } catch {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON no es JSON valido')
-  }
+  return SERVICE_ACCOUNT_CREDENTIALS
 }
 
 async function getSheetsClient() {

@@ -6,20 +6,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const brigada = searchParams.get('brigada') || ''
   
-  // Si no hay credenciales, usar modo demo
-  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    return NextResponse.json({
-      success: true,
-      demo_mode: true,
-      headers: DEMO_HEADERS,
-      students: DEMO_STUDENTS,
-      activeDay: 4,
-      dayColumns: DAY_COLS,
-      fetchedAt: new Date().toISOString(),
-      warning: 'Modo demo - Configura GOOGLE_SERVICE_ACCOUNT_JSON para conectar con Google Sheets',
-    })
-  }
-  
   try {
     const { headers, students, activeDay, sheetTitle } = await getSheetData(brigada || undefined)
     
